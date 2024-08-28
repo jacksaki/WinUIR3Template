@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "WinUIR3Template (Package)": {
+        "commandName": "MsixPackage"
+      },
+      "WinUIR3Template (Unpackaged)": {
+        "commandName": "Project"
+      }
+    }
+}
