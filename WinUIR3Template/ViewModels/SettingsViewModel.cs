@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.UI.Xaml;
-
+using R3;
 using Windows.ApplicationModel;
 
 using WinUIR3Template.Contracts.Services;
@@ -13,17 +13,21 @@ using WinUIR3Template.Helpers;
 
 namespace WinUIR3Template.ViewModels;
 
-public partial class SettingsViewModel : ObservableRecipient
+public partial class SettingsViewModel : ViewModelBase
 {
     private readonly IThemeSelectorService _themeSelectorService;
 
-    [ObservableProperty]
-    private ElementTheme _elementTheme;
+    public BindableReactiveProperty<ElementTheme> ElementTheme
+    {
+        get;
+    }
 
-    [ObservableProperty]
-    private string _versionDescription;
+    public BindableReactiveProperty<string> VersionDescription
+    {
+        get;
+    }
 
-    public ICommand SwitchThemeCommand
+    public ReactiveCommand<ElementTheme> SwitchThemeCommand
     {
         get;
     }
@@ -31,18 +35,17 @@ public partial class SettingsViewModel : ObservableRecipient
     public SettingsViewModel(IThemeSelectorService themeSelectorService)
     {
         _themeSelectorService = themeSelectorService;
-        _elementTheme = _themeSelectorService.Theme;
-        _versionDescription = GetVersionDescription();
-
-        SwitchThemeCommand = new RelayCommand<ElementTheme>(
-            async (param) =>
+        this.ElementTheme = new BindableReactiveProperty<ElementTheme>(_themeSelectorService.Theme);
+        this.VersionDescription = new BindableReactiveProperty<string>(GetVersionDescription());
+        this.SwitchThemeCommand = new ReactiveCommand<ElementTheme>();
+        this.SwitchThemeCommand.SubscribeAwait(async (x, ct) =>
+        {
+            if (this.ElementTheme.Value != x)
             {
-                if (ElementTheme != param)
-                {
-                    ElementTheme = param;
-                    await _themeSelectorService.SetThemeAsync(param);
-                }
-            });
+                this.ElementTheme.Value = x;
+                await _themeSelectorService.SetThemeAsync(x);
+            }
+        });
     }
 
     private static string GetVersionDescription()

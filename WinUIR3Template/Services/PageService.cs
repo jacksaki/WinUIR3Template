@@ -33,7 +33,7 @@ public class PageService : IPageService
     }
 
     private void Configure<VM, V>()
-        where VM : ObservableObject
+        where VM : ViewModelBase
         where V : Page
     {
         lock (_pages)

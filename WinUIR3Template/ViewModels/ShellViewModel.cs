@@ -1,19 +1,23 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
 using Microsoft.UI.Xaml.Navigation;
-
+using R3;
 using WinUIR3Template.Contracts.Services;
 using WinUIR3Template.Views;
 
 namespace WinUIR3Template.ViewModels;
 
-public partial class ShellViewModel : ObservableRecipient
+public partial class ShellViewModel : ViewModelBase
 {
-    [ObservableProperty]
-    private bool isBackEnabled;
+    public BindableReactiveProperty<bool> IsBackEnabled
+    {
+        get;
+    }
 
-    [ObservableProperty]
-    private object? selected;
+    public BindableReactiveProperty<object?> Selected
+    {
+        get;
+    }
 
     public INavigationService NavigationService
     {
@@ -26,26 +30,29 @@ public partial class ShellViewModel : ObservableRecipient
     }
 
     public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService)
+        : base()
     {
         NavigationService = navigationService;
         NavigationService.Navigated += OnNavigated;
         NavigationViewService = navigationViewService;
+        this.IsBackEnabled = new BindableReactiveProperty<bool>();
+        this.Selected = new BindableReactiveProperty<object?>();
     }
 
     private void OnNavigated(object sender, NavigationEventArgs e)
     {
-        IsBackEnabled = NavigationService.CanGoBack;
+        this.IsBackEnabled.Value = NavigationService.CanGoBack;
 
         if (e.SourcePageType == typeof(SettingsPage))
         {
-            Selected = NavigationViewService.SettingsItem;
+            this.Selected.Value = NavigationViewService.SettingsItem;
             return;
         }
 
         var selectedItem = NavigationViewService.GetSelectedItem(e.SourcePageType);
         if (selectedItem != null)
         {
-            Selected = selectedItem;
+            this.Selected.Value = selectedItem;
         }
     }
 }
